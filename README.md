@@ -339,3 +339,89 @@ pc-build-agent/
 └── tests/
     ├── test_validation.py
     └── test_planner.py
+```
+## Person A — LLM / Agent Pipeline (Steps 1, 2, 4, 5)
+
+**Own anything “agentic” + language + orchestration.**
+
+### Responsibilities
+
+- **Step 1:** `app/agent/interpreter.py`  
+  Natural language → normalized constraint JSON
+
+- **Step 2:** `app/agent/planner.py`  
+  Constraints → candidate build JSON
+
+- **Step 4:** `app/agent/critic.py`  
+  Turn validation results into revision instructions
+
+- **Step 5:** `app/explain/formatter.py`  
+  Final recommendation + tradeoffs + upgrade path
+
+- `app/agent/orchestrator.py`  
+  Plan–validate–revise loop controller
+
+- `app/llm/client.py`  
+  LLM wrapper + prompt execution
+
+- `app/llm/prompts/`  
+  Prompt templates
+
+### Deliverables
+
+- Working agent loop that calls validation and produces a final output
+- Prompt templates + a few example runs
+
+
+---
+
+## Person B — Deterministic Core + Data (Step 3 + Infra)
+
+**Own correctness, compatibility, and the “hard rules” layer.**
+
+### Responsibilities
+
+- **Step 3:** `app/validation/compatibility.py`  
+  Socket, DDR, form factor, cooling checks
+
+- `app/validation/power.py`  
+  Power estimation + PSU headroom logic
+
+- `app/models/*.py`  
+  Constraints / Build / Validation schemas (Pydantic or dataclasses)
+
+- `app/data/parts_db.json`  
+  Minimal metadata required for validation
+
+- `tests/test_validation.py`  
+  Validator unit tests (plus any planner/validator tests)
+
+- *(Optional)* API pricing adapter + caching layer (if added later)
+
+### Deliverables
+
+- `validate_build(build) -> ValidationResult`  
+  With clear error / warning codes
+
+- A small parts metadata schema that supports validation checks
+
+
+---
+
+## Shared / Integration Tasks (Do Together Near the End)
+
+- `app/main.py`  
+  CLI / API entry point
+
+- `README.md`  
+  Demo + how to run
+
+- `tests/test_planner.py`  
+  End-to-end scenarios
+
+### Module Contracts (Must Be Agreed On)
+
+- Constraints JSON shape
+- BuildSpec JSON shape
+- ValidationResult codes  
+  (e.g. `insufficient_psu`, `socket_mismatch`, `ddr_mismatch`)
