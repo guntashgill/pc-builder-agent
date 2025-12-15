@@ -141,6 +141,7 @@ The architecture is designed to be extensible, with optional modules for:
     "audio": false
   }
 }
+```
 ## Why This Matters
 
 - **Removes ambiguity from natural language**
@@ -190,6 +191,7 @@ The planner consumes the normalized constraint object and produces a **complete,
   },
   "estimated_cost_usd": 1475
 }
+```
 ### Contract Guarantees
 
 - Every required component is present  
@@ -223,6 +225,7 @@ The validator produces a structured result indicating whether the build is valid
     }
   ]
 }
+```
 ### Why Structured Feedback Matters
 
 - Enables targeted revision  
@@ -251,6 +254,7 @@ If validation fails or warnings exceed defined thresholds, the planner is re-inv
     "warnings": ["thermal_risk"]
   }
 }
+```
 The planner is instructed to **modify only the affected components**, preserving all valid decisions.
 
 ---
