@@ -6,7 +6,7 @@ from typing import Optional
 from pydantic import ValidationError
 
 from app.llm.client import LLMClient
-from app.models import Constraints, Build
+from app.models import Constraints, PCBuild
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,9 @@ class Planner:
     def generate_build(
         self,
         constraints: Constraints,
-        previous_build: Optional[Build] = None,
+        previous_build: Optional[PCBuild] = None,
         feedback: Optional[str] = None
-    ) -> Build:
+    ) -> PCBuild:
         """
         Generate a PC build from constraints
 
@@ -73,9 +73,9 @@ class Planner:
         else:
             raise ValueError(f"Unexpected response type: {type(raw_response)}")
 
-        # Parse into Build object
+        # Parse into PCBuild object
         try:
-            build = Build(**response_json)
+            build = PCBuild(**response_json)
             logger.info("Build generated successfully: cost=$%d, CPU=%s, GPU=%s",
                         build.estimated_cost_usd,
                         build.cpu.model,
@@ -88,7 +88,7 @@ class Planner:
     def _build_prompt(
         self,
         constraints: Constraints,
-        previous_build: Optional[Build] = None,
+        previous_build: Optional[PCBuild] = None,
         feedback: Optional[str] = None
     ) -> str:
         """Construct the user prompt from constraints and optional feedback"""
