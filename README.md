@@ -1,65 +1,131 @@
 # pc-builder-agent
-PC build recommendation agent.
 
-What this does
-Recommends a PC configuration(CPU model, GPU model, RAM, Storage, Chassis, Cooling System, PSU, Other Peripherals like monitors, speakers, headphones) given user inputted constraints including budget, workloads, performance priorities, form factor, noise tolerance, and upgrade preferences
+An **agentic PC build recommendation system** that generates, validates, and explains custom PC configurations based on user-defined constraints.
 
-How it does it
-1. Constraint extraction (Requirement interpretation)
+---
 
-The system first converts unstructured user input into a structured set of constraints.
-A large language model is used to interpret ambiguous or qualitative requirements (e.g., “future-proof,” “quiet,” “mostly for ML”) and normalize them into explicit parameters such as budget limits, workload weights, form factor, and performance priorities.
+## What This Does
 
-This step produces a validated, machine-readable representation of user intent that serves as the agent’s internal state.
+Recommends a complete PC configuration—including:
 
-2. Candidate build generation (Planning)
+- **CPU**
+- **GPU**
+- **RAM**
+- **Storage**
+- **Chassis**
+- **Cooling System**
+- **PSU**
+- **Optional peripherals** (monitor, audio, etc.)
 
-Using the extracted constraints, the agent generates an initial PC configuration.
-Rather than selecting parts through fixed rules, the system uses generative reasoning to balance competing objectives such as GPU performance vs. budget, thermals vs. acoustics, and present performance vs. upgrade path.
+Based on user-input constraints such as:
 
-The output at this stage is a complete candidate build with estimated cost and rationale for key choices
+- Budget
+- Target workloads (gaming, ML, productivity, etc.)
+- Performance priorities
+- Form factor
+- Noise tolerance
+- Upgrade horizon and future-proofing preferences
 
-3. Deterministic compatibility validation
+---
 
-The candidate build is then checked using deterministic validation logic to ensure correctness and feasibility.
-This includes verifying component compatibility (e.g., CPU socket and motherboard, RAM type, PSU wattage headroom, chassis form factor, and cooling capacity).
+## How It Works
 
-This step enforces hard constraints that cannot be reliably guaranteed by generative models alone.
+The system is structured as a **multi-step agent pipeline** with clear boundaries between generative reasoning and deterministic validation.
 
-4. Tradeoff analysis and self-critique
+---
 
-If the build violates constraints or exhibits suboptimal tradeoffs, the agent evaluates the failure mode (e.g., power insufficiency, thermal risk, budget overrun).
-The system generates structured feedback describing what went wrong and why, then revises the configuration accordingly.
+### 1. Constraint Extraction (Requirement Interpretation)
 
-This iterative plan-evaluate-revise loop is what gives the system its agentic behavior
+Unstructured natural language input is converted into a **structured constraint representation**.
 
-5. Explanation and recommendation output
+- A large language model interprets ambiguous or qualitative inputs  
+  (e.g. *“future-proof,” “quiet,” “mostly for ML”*)
+- These are normalized into explicit, machine-readable parameters:
+  - Budget limits
+  - Workload weights
+  - Performance priorities
+  - Form factor
+  - Noise tolerance
 
-Once a valid configuration is produced, the system generates a human-readable explanation describing:
+**Output:** a validated constraint object representing user intent  
+This object becomes the agent’s internal state.
 
-Why each major component was chosen
+---
 
-What tradeoffs were made
+### 2. Candidate Build Generation (Planning)
 
-Where performance bottlenecks may exist
+Using the structured constraints, the planner generates an initial PC build.
 
-How the system can be upgraded in the future
+- Uses **generative reasoning**, not fixed rules
+- Balances competing objectives:
+  - GPU vs. budget
+  - Thermals vs. acoustics
+  - Immediate performance vs. upgrade path
 
-This allows the recommendation to be understandable and actionable for users with varying levels of technical expertise.
+**Output:** a complete candidate build with:
+- Component selections
+- Estimated cost
+- Rationale for key choices
 
-6. Optional extensions
+---
 
-The system is designed to be extensible, with optional modules for price awareness, bottleneck scoring, or cloud-hosted deployment via a lightweight API.
+### 3. Deterministic Compatibility Validation
 
-Transitions between Steps
-Step 1 → Step 2
-Constraint Extraction → Build Planning
-Output of Step 1: Normalized Constraint Object
+The candidate build is checked using deterministic logic to enforce **hard constraints**:
 
-After interpreting user input, the system produces a validated JSON object representing the user’s requirements.
-This object serves as the agent’s internal state and is the only input to the planning stage.
+- CPU ↔ motherboard socket compatibility
+- RAM type compatibility
+- PSU wattage and headroom
+- Chassis form factor constraints
+- Cooling capacity vs. thermal load
 
-Example
+This step ensures correctness that generative models alone cannot guarantee.
+
+---
+
+### 4. Tradeoff Analysis & Self-Critique (Agent Loop)
+
+If validation fails or reveals risky tradeoffs:
+
+- The agent analyzes *why* the failure occurred
+- Produces structured feedback (errors + warnings)
+- Revises **only the affected components**
+
+This **plan → evaluate → revise loop** is what gives the system its **agentic behavior**.
+
+---
+
+### 5. Explanation & Recommendation Output
+
+Once a valid build is produced, the system generates a human-readable explanation covering:
+
+- Why each major component was chosen
+- Tradeoffs that were made
+- Potential bottlenecks
+- Upgrade paths over time
+
+The result is actionable for both beginners and advanced users.
+
+---
+
+### 6. Optional Extensions
+
+The architecture is designed to be extensible, with optional modules for:
+
+- Price awareness
+- Bottleneck scoring
+- Cloud deployment via a lightweight API
+
+---
+
+## Transitions Between Steps
+
+### Step 1 → Step 2  
+**Constraint Extraction → Build Planning**
+
+**Output of Step 1:** Normalized Constraint Object (JSON)
+
+```json
 {
   "budget_usd": 1500,
   "primary_workloads": ["gaming", "ml"],
@@ -75,19 +141,24 @@ Example
     "audio": false
   }
 }
+## Why This Matters
 
-Why this matters
-Removes ambiguity from natural language
-Allows deterministic validation
-Decouples NLP from planning logic
+- **Removes ambiguity from natural language**
+- **Enables deterministic validation**
+- **Decouples NLP from planning logic**
 
-Step 2 → Step 3
-Build Planning → Compatibility Validation
-Output of Step 2: Candidate PC Configuration
+---
 
-The planner consumes the constraint object and produces a complete candidate configuration with structured component selections and metadata.
+## Step 2 → Step 3  
+### Build Planning → Compatibility Validation
 
-Example
+**Output of Step 2:** Candidate PC Configuration
+
+The planner consumes the normalized constraint object and produces a **complete, structured PC configuration** with component selections and metadata.
+
+### Example Candidate Build
+
+```json
 {
   "cpu": {
     "model": "Ryzen 5 7600",
@@ -119,23 +190,24 @@ Example
   },
   "estimated_cost_usd": 1475
 }
+### Contract Guarantees
 
-Contract guarantees
+- Every required component is present  
+- All fields are typed and directly comparable  
+- No natural language is required downstream  
 
-Every required component is present
+---
 
-All fields are typed and comparable
+## Step 3 → Step 4  
+### Compatibility Validation → Tradeoff Analysis
 
-No natural language is required downstream
-
-
-Step 3 → Step 4
-Compatibility Validation → Tradeoff Analysis
- Output of Step 3: Validation Results (Pass / Fail + Failure Metadata)
+**Output of Step 3:** Validation Results (Pass / Fail + Failure Metadata)
 
 The validator produces a structured result indicating whether the build is valid and, if not, why.
 
-Example (failure case)
+### Example (Failure Case)
+
+```json
 {
   "is_valid": false,
   "errors": [
@@ -151,53 +223,71 @@ Example (failure case)
     }
   ]
 }
+### Why Structured Feedback Matters
 
-Why structured feedback matters
-Enables targeted revision
-Prevents random re-planning
-Makes failures explainable
+- Enables targeted revision  
+- Prevents random re-planning  
+- Makes failures explicit and explainable  
 
-Step 4 → Step 2(Revision Loop)
-Input to Step 2 (Revised Planning)
+---
 
-If validation fails or warnings exceed thresholds, the planner is re-invoked with:
+## Step 4 → Step 2 (Revision Loop)  
+### Input to Step 2 (Revised Planning)
 
-Original constraints
+If validation fails or warnings exceed defined thresholds, the planner is re-invoked with:
 
-Previous build
+- Original constraints  
+- Previous build  
+- Structured validation feedback  
 
-Structured validation feedback
+### Example Revision Input
 
-Example revision input
+```json
 {
-  "original_constraints": { ... },
-  "previous_build": { ... },
+  "original_constraints": { "...": "..." },
+  "previous_build": { "...": "..." },
   "feedback": {
     "errors": ["insufficient_psu"],
     "warnings": ["thermal_risk"]
   }
 }
+The planner is instructed to **modify only the affected components**, preserving all valid decisions.
 
+---
 
-The planner is instructed to modify only the affected components, preserving valid decisions.
-Step 4 → Step 5
-Final Build → Explanation Output
-Output of Step 4: Final Approved Build
+## Step 4 → Step 5  
+### Final Build → Explanation Output
+
+**Output of Step 4:** Final Approved Build
 
 Once a valid configuration is reached, the final structured build is passed to the explanation layer.
 
-The explanation stage consumes:
-Final build spec
-Original constraints
-Tradeoff metadata
-and produces a human-readable recommendation.
+### Explanation Stage Inputs
+
+The explanation layer consumes:
+
+- Final build specification  
+- Original constraints  
+- Tradeoff metadata  
+
+and produces a **human-readable recommendation** explaining component choices, tradeoffs, and upgrade paths.
+
+---
+
+## Architectural Overview
 
 This architecture demonstrates:
-Clear separation of concerns
-Deterministic system boundaries
-Agentic control over generative components
-Production-style AI system design
-Code File Structure
+
+- Clear separation of concerns  
+- Deterministic system boundaries  
+- Agentic control over generative components  
+- Production-style AI system design  
+
+---
+
+## Code File Structure
+
+```text
 pc-build-agent/
 ├── README.md
 ├── requirements.txt
@@ -209,7 +299,7 @@ pc-build-agent/
 │
 │   ├── agent/
 │   │   ├── __init__.py
-│   │   ├── orchestrator.py  # Controls agent loop
+│   │   ├── orchestrator.py  # Plan–validate–revise loop controller
 │   │   ├── interpreter.py   # Step 1: constraint extraction
 │   │   ├── planner.py       # Step 2: build generation
 │   │   ├── critic.py        # Step 4: evaluation & revision
@@ -221,7 +311,7 @@ pc-build-agent/
 │
 │   ├── data/
 │   │   ├── parts_db.json    # Component metadata
-│   │   ├── price_data.json  # (Optional) static prices
+│   │   ├── price_data.json  # Optional static prices
 │
 │   ├── models/
 │   │   ├── constraints.py   # Dataclasses / schemas
@@ -245,5 +335,3 @@ pc-build-agent/
 └── tests/
     ├── test_validation.py
     └── test_planner.py
-
-
