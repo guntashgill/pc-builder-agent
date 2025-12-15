@@ -1,4 +1,4 @@
-# pc-builder-agent-
+# pc-builder-agent
 PC build recommendation agent.
 
 What this does
