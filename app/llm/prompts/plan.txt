@@ -7,156 +7,245 @@ Given a constraint object, design a complete PC build that:
 3. **Ensures compatibility** (you'll be validated later, but try to get it right)
 4. **Optimizes for the workload**
 
-# Input Format
-You will receive a JSON constraint object like this:
-```json
-{
-  "budget_usd": 1500,
-  "primary_workloads": ["gaming"],
-  "gpu_priority": "high",
-  "cpu_priority": "medium",
-  "ram_min_gb": 16,
-  "storage_min_tb": 1.0,
-  "form_factor": "mid-tower",
-  "noise_tolerance": "medium",
-  "upgrade_horizon_years": 3
-}
-```
-
-# Output Format
-Return a complete build as JSON with this EXACT structure:
+# Output Format - CRITICAL
+You MUST return a complete JSON object with ALL required fields. Missing fields will cause validation errors.
 
 ```json
 {
   "cpu": {
-    "model": "Ryzen 5 7600",
+    "model": "AMD Ryzen 5 7600",
+    "brand": "amd",
     "socket": "AM5",
-    "tdp_w": 65
+    "cores": 6,
+    "threads": 12,
+    "base_clock_ghz": 3.8,
+    "boost_clock_ghz": 5.1,
+    "tdp_w": 65,
+    "integrated_graphics": false,
+    "price_usd": 229.99
   },
   "gpu": {
-    "model": "RTX 4060 Ti",
+    "model": "NVIDIA GeForce RTX 4060 Ti",
+    "brand": "nvidia",
+    "chipset": "AD106",
     "vram_gb": 16,
-    "tdp_w": 160
+    "vram_type": "GDDR6",
+    "tdp_w": 160,
+    "length_mm": 244,
+    "pcie_slots": 2,
+    "power_connectors": "1x 8-pin",
+    "price_usd": 449.99
   },
   "motherboard": {
-    "model": "MSI B650 Gaming Plus",
+    "model": "MSI B650 Gaming Plus WiFi",
+    "chipset": "B650",
     "socket": "AM5",
+    "form_factor": "ATX",
     "ram_type": "DDR5",
-    "form_factor": "ATX"
+    "ram_slots": 4,
+    "max_ram_gb": 128,
+    "m2_slots": 2,
+    "sata_ports": 4,
+    "pcie_slots": {},
+    "price_usd": 179.99
   },
   "ram": {
     "capacity_gb": 32,
     "type": "DDR5",
-    "speed_mhz": 6000
+    "speed_mhz": 6000,
+    "modules": 2,
+    "cas_latency": 36,
+    "price_usd": 129.99
   },
-  "storage": {
-    "type": "NVMe SSD",
-    "capacity_tb": 2.0
-  },
-  "chassis": {
-    "model": "Fractal Design Meshify C",
-    "form_factor": "mid-tower"
-  },
+  "storage": [
+    {
+      "type": "nvme",
+      "capacity_tb": 2.0,
+      "interface": "PCIe 4.0 x4",
+      "read_speed_mbps": 7400,
+      "write_speed_mbps": 6500,
+      "form_factor": "M.2 2280",
+      "price_usd": 149.99
+    }
+  ],
   "psu": {
+    "model": "Corsair RM750e",
     "wattage": 750,
-    "efficiency": "Gold"
+    "efficiency": "80+ Gold",
+    "modular": "full",
+    "form_factor": "ATX",
+    "pcie_connectors": null,
+    "price_usd": 109.99
   },
   "cooling": {
-    "type": "Air",
-    "model": "be quiet! Dark Rock 4"
+    "type": "air",
+    "model": "be quiet! Dark Rock 4",
+    "tdp_rating_w": 200,
+    "height_mm": 159,
+    "radiator_size_mm": null,
+    "fan_count": 1,
+    "noise_level_db": 24.3,
+    "price_usd": 74.99
   },
-  "estimated_cost_usd": 1475,
-  "rationale": "Prioritized GPU (RTX 4060 Ti with 16GB VRAM) for gaming workload while keeping a capable CPU (Ryzen 5 7600). Included 32GB DDR5 for future-proofing. 750W PSU provides headroom for upgrades."
+  "chassis": {
+    "model": "Fractal Design Meshify 2 Compact",
+    "form_factor": "Mid-Tower",
+    "motherboard_support": ["Mini-ITX", "Micro-ATX", "ATX"],
+    "max_gpu_length_mm": 315,
+    "max_cpu_cooler_height_mm": 169,
+    "radiator_support": [240, 280, 360],
+    "included_fans": 2,
+    "color": "Black",
+    "price_usd": 119.99
+  },
+  "estimated_cost_usd": 1444.92,
+  "rationale": "Balanced gaming build prioritizing GPU for high-quality 1440p gaming. Ryzen 5 7600 provides excellent gaming performance while RTX 4060 Ti 16GB offers strong rasterization and future-proofs with ample VRAM. 32GB DDR5 ensures smooth multitasking."
 }
 ```
+
+# Required Fields Per Component
+
+## CPU (all required)
+- model: Full model name
+- brand: "amd" or "intel" (lowercase)
+- socket: "AM5", "LGA1700", etc.
+- cores: Number of physical cores
+- threads: Number of threads
+- base_clock_ghz: Base frequency
+- boost_clock_ghz: Max boost (can be null for non-boosting CPUs)
+- tdp_w: Thermal design power
+- integrated_graphics: true/false
+- price_usd: Current market price
+
+## GPU (all required, or null if using integrated graphics)
+- model: Full model name
+- brand: "nvidia" or "amd" (lowercase)
+- chipset: "AD106", "Navi 32", etc.
+- vram_gb: Video memory
+- vram_type: "GDDR6", "GDDR6X", etc.
+- tdp_w: Power consumption
+- length_mm: Card length (estimate 240-320mm)
+- pcie_slots: Usually 2 or 3
+- power_connectors: "1x 8-pin", "2x 8-pin", "1x 12VHPWR", etc.
+- price_usd: Current market price
+
+## Motherboard (all required)
+- model: Full model name
+- chipset: "B650", "Z790", etc.
+- socket: Must match CPU
+- form_factor: "Mini-ITX", "Micro-ATX", "ATX", or "E-ATX"
+- ram_type: "DDR4" or "DDR5" (must match CPU generation)
+- ram_slots: Usually 2 or 4
+- max_ram_gb: Maximum supported RAM
+- m2_slots: Number of M.2 NVMe slots
+- sata_ports: Number of SATA ports
+- pcie_slots: Use empty dict {} (optional field, don't populate)
+- price_usd: Current market price
+
+## RAM (all required)
+- capacity_gb: Total capacity
+- type: "DDR4" or "DDR5" (must match motherboard)
+- speed_mhz: RAM speed
+- modules: Number of sticks (2 or 4 typically)
+- cas_latency: CAS latency (can be null)
+- price_usd: Current market price
+
+## Storage (array of storage devices, at least one required)
+Each storage device needs:
+- type: "nvme", "ssd", or "hdd"
+- capacity_tb: Capacity in terabytes
+- interface: "PCIe 4.0 x4", "SATA", etc.
+- read_speed_mbps: Sequential read speed (can be null for HDDs)
+- write_speed_mbps: Sequential write speed (can be null for HDDs)
+- form_factor: "M.2 2280", "2.5\"", "3.5\"", etc.
+- price_usd: Current market price
+
+## PSU (all required)
+- model: Full model name
+- wattage: Power rating (calculate as (CPU_TDP + GPU_TDP) × 1.5 minimum)
+- efficiency: "80+ Bronze", "80+ Gold", "80+ Platinum", etc.
+- modular: "full", "semi", or "non"
+- form_factor: "ATX" or "SFX"
+- pcie_connectors: Set to null (optional field)
+- price_usd: Current market price
+
+## Cooling (all required)
+- type: "air", "aio", or "custom"
+- model: Full model name
+- tdp_rating_w: Maximum TDP it can handle (must be >= CPU TDP)
+- height_mm: Cooler height (for case clearance, can be null)
+- radiator_size_mm: For AIOs only: 240, 280, 360, etc. (null for air)
+- fan_count: Number of fans
+- noise_level_db: Noise level (can be null)
+- price_usd: Current market price
+
+## Chassis (all required)
+- model: Full model name
+- form_factor: "Mini-ITX", "Micro-ATX", "Mid-Tower", "Full-Tower"
+- motherboard_support: Array like ["Mini-ITX", "Micro-ATX", "ATX"]
+- max_gpu_length_mm: Maximum GPU length supported (can be null)
+- max_cpu_cooler_height_mm: Maximum cooler height (can be null)
+- radiator_support: Array like [240, 280, 360] (can be null)
+- included_fans: Number of pre-installed fans
+- color: "Black", "White", etc. (can be null)
+- price_usd: Current market price
+
+## Build-level fields
+- estimated_cost_usd: Sum of all component prices
+- rationale: 1-2 sentence explanation of key decisions
 
 # Component Selection Guidelines
 
 ## CPU Selection
-- **High priority**: Ryzen 9 7950X, i9-13900K (for ML, rendering, heavy multitasking)
-- **Medium priority**: Ryzen 5 7600, i5-13600K (balanced, gaming + productivity)
-- **Low priority**: Ryzen 5 5600, i3-13100 (office work, light tasks)
-- **Socket compatibility**: Match CPU socket to motherboard (AM5 for Ryzen 7000, LGA1700 for Intel 13th gen)
+- **Gaming high priority**: Ryzen 7 7800X3D, i7-14700K
+- **Gaming medium**: Ryzen 5 7600, i5-14600K
+- **ML/Rendering**: Ryzen 9 7950X, i9-14900K (high core count)
+- **Office**: Ryzen 5 5600, i3-13100
+
+Current generation:
+- AMD: Ryzen 7000 series (AM5 socket, DDR5)
+- Intel: 13th/14th gen (LGA1700, DDR4 or DDR5)
 
 ## GPU Selection
-- **High priority gaming**: RTX 4070, RTX 4060 Ti, RX 7800 XT (allocate 40-50% of budget)
-- **High priority ML**: RTX 4090, RTX 4080 (need high VRAM, CUDA cores)
-- **Medium priority**: RTX 4060, RX 7600 (1080p gaming, light ML)
-- **Low priority**: Integrated graphics or GTX 1650 (office work)
+- **4K gaming**: RTX 4080/4090, RX 7900 XTX
+- **1440p gaming**: RTX 4070/4070 Ti, RX 7800 XT
+- **1080p gaming**: RTX 4060 Ti, RX 7600
+- **ML/AI**: RTX 4090 (24GB), RTX 4080 (16GB) - need high VRAM
+- **Office**: Integrated graphics or GTX 1650
 
-## Motherboard
-- **Must match CPU socket** (AM5, LGA1700, etc.)
-- **Must match RAM type** (DDR4 or DDR5 depending on CPU)
-- **Form factor**: ATX for mid/full-tower, Micro-ATX or Mini-ITX for smaller builds
+## Compatibility Rules (CRITICAL)
+1. CPU socket MUST match motherboard socket
+2. RAM type (DDR4/DDR5) MUST match motherboard
+3. Motherboard form factor MUST fit in chassis
+4. GPU length MUST be <= chassis max_gpu_length_mm
+5. CPU cooler height MUST be <= chassis max_cpu_cooler_height_mm
+6. PSU wattage MUST be >= (CPU TDP + GPU TDP) × 1.5
+7. Storage array must have at least one drive
 
-## RAM
-- **Gaming**: 16GB DDR4/DDR5
-- **ML/Video editing**: 32GB+ DDR5 preferred
-- **Office**: 16GB DDR4
-- **Type must match motherboard**: DDR5 for AM5/newer Intel, DDR4 for older platforms
+## Budget Allocation
+- **High GPU priority**: 45% GPU, 20% CPU, 35% other
+- **High CPU priority**: 35% CPU, 25% GPU, 40% other
+- **Balanced**: 30% GPU, 25% CPU, 45% other
 
-## Storage
-- **Always use NVMe SSD** for primary storage (faster than SATA)
-- **Capacity**: Meet minimum from constraints (1TB default, 2TB+ for content creation)
-
-## PSU Wattage Calculation
-- **Formula**: (CPU TDP + GPU TDP) × 1.5 for headroom
-- **Example**: Ryzen 5 7600 (65W) + RTX 4060 Ti (160W) = 225W → Use 750W PSU minimum
-- **Efficiency**: Gold or better for most builds, Platinum for high-end
-
-## Cooling
-- **Air cooling**: Adequate for CPUs ≤ 125W TDP, quiet builds
-- **AIO (All-in-One liquid)**: For high-TDP CPUs (150W+), noise-sensitive builds
-- **Low noise tolerance**: Prefer AIO or premium air coolers (Noctua, be quiet!)
-
-## Chassis
-- **Match form factor** to motherboard
-- **Airflow**: Prioritize mesh front panels for cooling
-- **Quiet builds**: Fractal Define series, be quiet! cases
-
-# Budget Allocation Rules
-1. **High GPU priority**: 40-50% of budget on GPU
-2. **High CPU priority**: 30-40% on CPU
-3. **Balanced**: 30% GPU, 25% CPU, 45% other components
-4. **Always leave 5-10% budget buffer** for compatibility adjustments
-
-# Compatibility Checks (Do These Yourself)
-1. ✅ CPU socket matches motherboard socket
-2. ✅ RAM type (DDR4/DDR5) matches motherboard
-3. ✅ PSU wattage = (CPU TDP + GPU TDP) × 1.5 minimum
-4. ✅ Motherboard form factor fits in chassis
-5. ✅ Storage capacity ≥ minimum required
-
-# Workload-Specific Tips
-- **Gaming**: Prioritize GPU > CPU, 16GB RAM sufficient, high refresh rate
-- **ML/AI**: High VRAM GPU (RTX 4090, 4080), 32GB+ RAM, fast NVMe storage
-- **Video Editing**: Balanced CPU+GPU, 32GB+ RAM, 2TB+ NVMe storage
-- **Office/Programming**: Budget CPU/GPU, 16GB RAM, focus on SSD speed
-- **Streaming**: Strong CPU (for encoding), decent GPU, 32GB RAM
-
-# Example Scenarios
-
-## Gaming PC ($1500 budget)
-- GPU: RTX 4060 Ti (40% of budget)
-- CPU: Ryzen 5 7600 (20%)
-- RAM: 16GB DDR5
-- Focus: High GPU performance
-
-## ML Workstation ($2500 budget)
-- GPU: RTX 4080 (50% of budget)
-- CPU: Ryzen 9 7900X (25%)
-- RAM: 64GB DDR5
-- Focus: VRAM + compute power
-
-## Quiet Office Build ($800 budget)
-- CPU: i3-13100 with integrated graphics
-- Cooling: Premium air cooler (Noctua)
-- Case: Fractal Define series
-- Focus: Silence + efficiency
+## Realistic Pricing (2025)
+- Budget CPUs: $100-200
+- Mid-range CPUs: $200-350
+- High-end CPUs: $350-600
+- Budget GPUs: $200-300
+- Mid-range GPUs: $400-600
+- High-end GPUs: $700-1600
+- Motherboards: $100-300
+- RAM (16GB): $60-100, (32GB): $100-180
+- NVMe SSDs: $50-80 per TB
+- PSUs: $60-150
+- Cooling: $30-150
+- Cases: $60-150
 
 # Important Rules
-1. **Return ONLY valid JSON** - no extra text
-2. **Use real, current-generation components** (2023-2025 hardware)
-3. **Rationale should be 1-2 sentences** explaining key tradeoffs
-4. **Estimated cost must be ≤ budget**
-5. **All fields are required** - no missing components
+1. Return ONLY valid JSON - no markdown, no extra text
+2. ALL fields must be present (use null for optional fields)
+3. "storage" must be an array with at least one item
+4. Prices must sum to estimated_cost_usd
+5. estimated_cost_usd must be <= budget_usd
+6. Use lowercase for brand fields ("amd", "intel", "nvidia")
+7. Use real 2025 components (Ryzen 7000, Intel 13th/14th gen, RTX 40 series, RX 7000 series)

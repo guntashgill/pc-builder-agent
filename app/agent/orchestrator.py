@@ -118,7 +118,7 @@ class Orchestrator:
 
             # Step 3: Validate build
             logger.info("STEP 3: Validating build compatibility")
-            validation_result = validate_build(build, constraints)
+            validation_result = validate_build(build)
 
             if validation_result.is_valid:
                 logger.info("="*70)
@@ -160,15 +160,14 @@ class Orchestrator:
             f"Last errors: {[e.message for e in validation_result.errors]}"
         )
 
-    def quick_validate(self, build: PCBuild, constraints: Constraints) -> ValidationResult:
+    def quick_validate(self, build: PCBuild) -> ValidationResult:
         """
         Validate an existing build without running the full loop
 
         Args:
             build: PC build to validate
-            constraints: Original constraints
 
         Returns:
             ValidationResult
         """
-        return validate_build(build, constraints)
+        return validate_build(build)
