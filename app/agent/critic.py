@@ -17,7 +17,6 @@ class Critic:
         self.system_prompt = self._load_prompt()
 
     def _load_prompt(self) -> str:
-        """Load the critique prompt template"""
         prompt_path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "critique.txt")
         )
@@ -32,33 +31,18 @@ class Critic:
         constraints: Constraints,
         validation_result: ValidationResult
     ) -> Dict[str, Any]:
-        """
-        Analyze why a build failed validation and provide revision instructions
-
-        Args:
-            build: The failed PC build
-            constraints: Original user constraints
-            validation_result: Validation results with errors/warnings
-
-        Returns:
-            Dict with critical_issues, recommended_changes, preserve_components
-
-        Raises:
-            ValueError: If analysis fails
-        """
+        """Analyze build validation failure and generate revision instructions"""
         logger.info("Analyzing build failure: %d errors, %d warnings",
                     len(validation_result.errors),
                     len(validation_result.warnings))
 
-        # Build the analysis prompt
         user_prompt = self._build_analysis_prompt(build, constraints, validation_result)
 
-        # Call LLM for analysis
         try:
             critique = self.llm.call_with_json(
                 system_prompt=self.system_prompt,
                 user_prompt=user_prompt,
-                temperature=0.3,  # Low temp for consistent, logical analysis
+                temperature=0.3,
             )
 
             logger.info("Critique generated: %d critical issues, %d warnings",
@@ -77,7 +61,6 @@ class Critic:
         constraints: Constraints,
         validation_result: ValidationResult
     ) -> str:
-        """Construct the prompt for build analysis"""
 
         # Format validation errors
         errors_text = "\n".join([

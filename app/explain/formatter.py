@@ -8,15 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class BuildFormatter:
-    """
-    Formats valid PC builds into human-readable explanations.
-    
-    Explains:
-    - Why each component was chosen
-    - Key tradeoffs that were made
-    - Potential bottlenecks
-    - Upgrade paths over time
-    """
+    """Formats PC builds into human-readable explanations"""
 
     def __init__(self, llm_client: Optional[LLMClient] = None):
         self.llm = llm_client or LLMClient()
@@ -27,17 +19,7 @@ class BuildFormatter:
         constraints: Constraints,
         include_technical_details: bool = True
     ) -> str:
-        """
-        Generate human-readable build explanation
-
-        Args:
-            build: Valid PC build to explain
-            constraints: Original user requirements
-            include_technical_details: Include specs or just high-level explanation
-
-        Returns:
-            Formatted string with build details and rationale
-        """
+        """Generate human-readable build explanation"""
         logger.info("Formatting build explanation")
 
         output = []
@@ -143,7 +125,6 @@ class BuildFormatter:
             output.append(build.rationale)
             output.append("")
 
-        # Generate LLM explanation for tradeoffs and upgrade path
         explanation = self._generate_explanation(build, constraints)
         if explanation:
             output.append("="*70)
@@ -158,16 +139,6 @@ class BuildFormatter:
         return "\n".join(output)
 
     def _generate_explanation(self, build: PCBuild, constraints: Constraints) -> Optional[str]:
-        """
-        Use LLM to generate tradeoffs and upgrade path explanation
-
-        Args:
-            build: The final build
-            constraints: Original requirements
-
-        Returns:
-            Explanation text or None if generation fails
-        """
         prompt = f"""Analyze this PC build and provide:
 1. Key tradeoffs made (what was prioritized vs sacrificed)
 2. Potential bottlenecks for the target workload
@@ -197,15 +168,7 @@ Keep it concise (3-5 bullet points total). Be specific and actionable."""
             return None
 
     def quick_summary(self, build: PCBuild) -> str:
-        """
-        One-line build summary
-
-        Args:
-            build: PC build
-
-        Returns:
-            Brief summary string
-        """
+        """One-line build summary"""
         gpu_str = build.gpu.model if build.gpu else "iGPU"
         return (
             f"{build.cpu.model} + {gpu_str} | "

@@ -19,7 +19,6 @@ class Planner:
         self.system_prompt = self._load_prompt()
 
     def _load_prompt(self) -> str:
-        """Load the planning prompt template"""
         prompt_path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "plan.txt")
         )
@@ -34,35 +33,19 @@ class Planner:
         previous_build: Optional[PCBuild] = None,
         feedback: Optional[str] = None
     ) -> PCBuild:
-        """
-        Generate a PC build from constraints
-
-        Args:
-            constraints: User requirements
-            previous_build: Previous build attempt (for revision)
-            feedback: Validation feedback for revision (e.g., "insufficient PSU wattage")
-
-        Returns:
-            Complete Build object
-
-        Raises:
-            ValueError: If generation or validation fails
-        """
+        """Generate PC build from constraints (supports revision mode)"""
         logger.info("Generating PC build for budget=$%d, workloads=%s",
                     constraints.budget_usd,
                     constraints.primary_workloads)
 
-        # Construct user prompt
         user_prompt = self._build_prompt(constraints, previous_build, feedback)
 
-        # Call LLM
         raw_response = self.llm.call_with_json(
             system_prompt=self.system_prompt,
             user_prompt=user_prompt,
-            temperature=0.4,  # Slightly higher for creative component selection
+            temperature=0.4,
         )
 
-        # Validate response
         if isinstance(raw_response, str):
             try:
                 response_json = json.loads(raw_response)
@@ -73,7 +56,6 @@ class Planner:
         else:
             raise ValueError(f"Unexpected response type: {type(raw_response)}")
 
-        # Parse into PCBuild object
         try:
             build = PCBuild(**response_json)
             logger.info("Build generated successfully: cost=$%d, CPU=%s, GPU=%s",
@@ -91,7 +73,6 @@ class Planner:
         previous_build: Optional[PCBuild] = None,
         feedback: Optional[str] = None
     ) -> str:
-        """Construct the user prompt from constraints and optional feedback"""
 
         if previous_build and feedback:
             # Revision mode

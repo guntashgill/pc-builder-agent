@@ -19,7 +19,6 @@ class Interpreter:
         self.system_prompt = self._load_prompt()
 
     def _load_prompt(self) -> str:
-        """Load the interpret prompt template"""
         prompt_path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "interpret.txt")
         )
@@ -29,18 +28,7 @@ class Interpreter:
             return f.read()
 
     def extract_constraints(self, user_input: str) -> Constraints:
-        """
-        Convert natural language to structured constraints
-
-        Args:
-            user_input: Raw user request (e.g., "I need a gaming PC for $1500")
-
-        Returns:
-            Validated Constraints object
-
-        Raises:
-            ValueError: If extraction fails or validation fails
-        """
+        """Convert natural language to structured Constraints"""
         if not self.validate_input(user_input):
             raise ValueError("User input is too short or empty")
 
@@ -52,7 +40,6 @@ class Interpreter:
             temperature=0.3,
         )
 
-        # Normalize response to dict
         if isinstance(raw_response, str):
             try:
                 response_json = json.loads(raw_response)
@@ -63,7 +50,6 @@ class Interpreter:
         else:
             raise ValueError(f"Unexpected LLM response type: {type(raw_response)}")
 
-        # Validate using Pydantic model
         try:
             constraints = Constraints(**response_json)
             logger.info("Constraints extracted successfully: budget=%s workloads=%s",
@@ -74,12 +60,6 @@ class Interpreter:
             raise ValueError(f"Failed to validate extracted constraints: {e}")
 
     def validate_input(self, user_input: str) -> bool:
-        """
-        Quick validation of user input before processing
-
-        Returns:
-            True if input seems valid, False otherwise
-        """
         if not user_input or len(user_input.strip()) < 10:
             return False
         return True

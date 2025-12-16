@@ -13,38 +13,21 @@ load_dotenv()
 
 
 class LLMClient:
-    """Wrapper for LLM API calls with structured JSON output support
-
-    Supports both OpenAI and Ollama (local) providers
-    """
+    """Wrapper for LLM API calls supporting OpenAI and Ollama"""
 
     def __init__(self, model: Optional[str] = None, provider: Optional[str] = None):
-        """
-        Initialize LLM client
-
-        Args:
-            model: Model name (auto-detected from env if not provided)
-            provider: "openai" or "ollama" (defaults to LLM_PROVIDER env var)
-        """
         self.provider = provider or os.getenv("LLM_PROVIDER", "openai")
 
         if self.provider == "ollama":
-            # Ollama setup (local, free)
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             self.model = model or os.getenv("OLLAMA_MODEL", "llama3.1:8b")
-            self.client = OpenAI(
-                base_url=f"{base_url}/v1",
-                api_key="ollama"  # Ollama doesn't need a real API key
-            )
+            self.client = OpenAI(base_url=f"{base_url}/v1", api_key="ollama")
             logger.info(f"LLMClient initialized with Ollama: {self.model} at {base_url}")
 
         elif self.provider == "openai":
-            # OpenAI setup (cloud, paid)
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
-                raise ValueError(
-                    "OpenAI API key not found. Set OPENAI_API_KEY in .env file"
-                )
+                raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY in .env file")
             self.model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
             self.client = OpenAI(api_key=api_key)
             logger.info(f"LLMClient initialized with OpenAI: {self.model}")
@@ -59,25 +42,8 @@ class LLMClient:
         temperature: float = 0.3,
         max_tokens: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """
-        Call LLM and parse JSON response
-
-        Args:
-            system_prompt: System message defining the task
-            user_prompt: User input to process
-            temperature: Sampling temperature (0.0-2.0)
-            max_tokens: Maximum tokens in response
-
-        Returns:
-            Parsed JSON response as dict
-
-        Raises:
-            ValueError: If response cannot be parsed as JSON
-        """
+        """Call LLM and parse JSON response"""
         try:
-            logger.debug(f"Calling LLM with temperature={temperature}")
-
-            # Build request parameters
             params = {
                 "model": self.model,
                 "messages": [
@@ -90,7 +56,6 @@ class LLMClient:
             if max_tokens:
                 params["max_tokens"] = max_tokens
 
-            # Only OpenAI supports response_format
             if self.provider == "openai":
                 params["response_format"] = {"type": "json_object"}
 
@@ -100,11 +65,7 @@ class LLMClient:
             if not content:
                 raise ValueError("LLM returned empty response")
 
-            # Parse JSON
-            parsed = json.loads(content)
-
-            logger.debug(f"Successfully parsed JSON response with {len(parsed)} keys")
-            return parsed
+            return json.loads(content)
 
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse LLM response as JSON: {e}")
@@ -120,21 +81,8 @@ class LLMClient:
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> str:
-        """
-        Call LLM and return raw text response (for explanations, not structured data)
-
-        Args:
-            system_prompt: System message defining the task
-            user_prompt: User input to process
-            temperature: Sampling temperature (0.0-2.0)
-            max_tokens: Maximum tokens in response
-
-        Returns:
-            Raw text response
-        """
+        """Call LLM and return raw text response"""
         try:
-            logger.debug(f"Calling LLM (text mode) with temperature={temperature}")
-
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -146,11 +94,9 @@ class LLMClient:
             )
 
             content = response.choices[0].message.content
-
             if not content:
                 raise ValueError("LLM returned empty response")
 
-            logger.debug(f"Successfully received text response ({len(content)} chars)")
             return content
 
         except Exception as e:
